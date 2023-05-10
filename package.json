@@ -1,0 +1,19 @@
+{
+  "name": "threejs-infinie-circular-gallery-codrops",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.3.2"
+  },
+  "dependencies": {
+    "ogl": "^0.0.117",
+    "sass": "^1.62.1",
+    "vite-plugin-glsl": "^1.1.2"
+  }
+}
