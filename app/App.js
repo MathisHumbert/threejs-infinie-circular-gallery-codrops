@@ -1,9 +1,20 @@
 import { Renderer, Camera, Transform, Plane } from 'ogl';
+import normalizeWheel from 'normalize-wheel';
+import { debounce } from 'lodash';
 
 import Media from './Media';
-
+import { lerp } from './utils';
 export default class App {
   constructor() {
+    this.scroll = {
+      current: 0,
+      target: 0,
+      last: 0,
+      ease: 0.05,
+    };
+
+    this.onCheckDebounce = debounce(this.onCheck, 200);
+
     this.createRenderer();
     this.createCamera();
     this.createScene();
@@ -86,6 +97,7 @@ export default class App {
         screen: this.screen,
         text,
         viewport: this.viewport,
+        renderer: this.renderer,
       });
 
       return media;
@@ -120,23 +132,72 @@ export default class App {
     }
   }
 
-  onWheel(event) {}
+  onWheel(event) {
+    const normalized = normalizeWheel(event);
+    const speed = normalized.pixelY;
 
-  onTouchDown(event) {}
+    this.scroll.target += speed * 0.005;
 
-  onTouchMove(event) {}
+    this.onCheckDebounce();
+  }
 
-  onTouchUp(event) {}
+  onTouchDown(event) {
+    this.isDown = true;
+
+    this.scroll.position = this.scroll.current;
+    this.start = event.touches ? event.touches[0].clientX : event.clientX;
+  }
+
+  onTouchMove(event) {
+    if (!this.isDown) return;
+
+    const x = event.touches ? event.touches[0].clientX : event.clientX;
+    const distance = (this.start - x) * 0.01;
+    this.scroll.target = this.scroll.position + distance;
+  }
+
+  onTouchUp() {
+    this.isDown = false;
+
+    this.onCheck();
+  }
+
+  // snapping the closest item
+  onCheck() {
+    const { width } = this.medias[0];
+    const itemIndex = Math.round(Math.abs(this.scroll.target) / width);
+    const item = width * itemIndex;
+
+    if (this.scroll.target < 0) {
+      this.scroll.target = -item;
+    } else {
+      this.scroll.target = item;
+    }
+  }
 
   update() {
+    this.scroll.current = lerp(
+      this.scroll.current,
+      this.scroll.target,
+      this.scroll.ease
+    );
+
+    if (this.scroll.current > this.scroll.last) {
+      this.direction = 'right';
+    } else {
+      this.direction = 'left';
+    }
+
+    if (this.medias) {
+      this.medias.forEach((media) => media.update(this.scroll, this.direction));
+    }
+
+    this.scroll.last = this.scroll.current;
+
     this.renderer.render({
       scene: this.scene,
       camera: this.camera,
     });
-
-    if (this.medias) {
-      this.medias.forEach((media) => media.update());
-    }
 
     window.requestAnimationFrame(this.update.bind(this));
   }

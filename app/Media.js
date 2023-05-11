@@ -1,7 +1,9 @@
 import { Mesh, Program, Texture } from 'ogl';
+import { map } from './utils';
 
-import fragment from './glsl/fragment.glsl';
-import vertex from './glsl/vertex.glsl';
+import fragment from './shaders/image-fragment.glsl';
+import vertex from './shaders/image-vertex.glsl';
+import Title from './Title';
 
 export default class Media {
   constructor({
@@ -14,6 +16,7 @@ export default class Media {
     screen,
     text,
     viewport,
+    renderer,
   }) {
     this.geometry = geometry;
     this.gl = gl;
@@ -24,9 +27,13 @@ export default class Media {
     this.screen = screen;
     this.text = text;
     this.viewport = viewport;
+    this.renderer = renderer;
+
+    this.extra = 0;
 
     this.createShader();
     this.createMesh();
+    this.createTitle();
 
     this.onResize();
   }
@@ -42,6 +49,8 @@ export default class Media {
         uImageSize: { value: [0, 0] },
         uPlaneSize: { value: [0, 0] },
         uViewportSizes: { value: [this.viewport.width, this.viewport.height] },
+        uSpeed: { value: 0 },
+        uTime: { value: 0 },
       },
       transparent: true,
     });
@@ -68,6 +77,15 @@ export default class Media {
     this.plane.setParent(this.scene);
   }
 
+  createTitle() {
+    new Title({
+      gl: this.gl,
+      plane: this.plane,
+      renderer: this.renderer,
+      text: this.text,
+    });
+  }
+
   onResize({ screen, viewport } = {}) {
     if (screen) this.screen = screen;
 
@@ -80,6 +98,7 @@ export default class Media {
       ];
     }
 
+    // set size for the plane
     this.scale = this.screen.height / 1500;
 
     this.plane.scale.x =
@@ -100,7 +119,45 @@ export default class Media {
     this.x = this.width * this.index;
   }
 
-  update() {
-    this.plane.position.x = this.x;
+  update(scroll, direction) {
+    // update plane position
+    this.plane.position.x = this.x - scroll.current * 1.5 - this.extra;
+
+    // circular rotation
+    this.plane.rotation.z = map(
+      this.plane.position.x,
+      -this.widthTotal,
+      this.widthTotal,
+      Math.PI,
+      -Math.PI
+    );
+    this.plane.position.y =
+      Math.cos((this.plane.position.x / this.widthTotal) * Math.PI) * 75 - 75;
+
+    this.speed = scroll.current - scroll.last;
+
+    this.program.uniforms.uTime.value += 0.04;
+    this.program.uniforms.uSpeed.value = this.speed;
+
+    // infinite gallery
+    const planeOffset = this.plane.scale.x / 2;
+    const viewportOffest = this.viewport.width;
+
+    this.isBefore = this.plane.position.x + planeOffset < -viewportOffest;
+    this.isAfter = this.plane.position.x - planeOffset > viewportOffest;
+
+    if (direction === 'right' && this.isBefore) {
+      this.extra -= this.widthTotal;
+
+      this.isBefore = false;
+      this.isAfter = false;
+    }
+
+    if (direction === 'left' && this.isAfter) {
+      this.extra += this.widthTotal;
+
+      this.isBefore = false;
+      this.isAfter = false;
+    }
   }
 }
