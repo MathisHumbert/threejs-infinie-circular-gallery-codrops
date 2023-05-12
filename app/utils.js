@@ -10,3 +10,7 @@ export function map(num, min1, max1, min2, max2, round = false) {
 
   return num2;
 }
+
+export function random(min, max) {
+  return Math.random() * (max - min) + min;
+}

@@ -1,9 +1,10 @@
 import { Mesh, Program, Texture } from 'ogl';
-import { map } from './utils';
+import { map } from '../utils';
 
 import fragment from './shaders/image-fragment.glsl';
 import vertex from './shaders/image-vertex.glsl';
 import Title from './Title';
+import Number from './Number';
 
 export default class Media {
   constructor({
@@ -83,6 +84,13 @@ export default class Media {
       plane: this.plane,
       renderer: this.renderer,
       text: this.text,
+    });
+
+    new Number({
+      gl: this.gl,
+      plane: this.plane,
+      renderer: this.renderer,
+      text: (this.index % (this.length / 2)) + 1,
     });
   }
 

@@ -1,3 +1,4 @@
-import App from './App';
+import OGL from './ogl/App';
+import THREE from './three/App';
 
-new App();
+new THREE();

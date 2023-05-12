@@ -3,7 +3,9 @@ import normalizeWheel from 'normalize-wheel';
 import { debounce } from 'lodash';
 
 import Media from './Media';
-import { lerp } from './utils';
+import Background from './Background';
+import { lerp } from '../utils';
+
 export default class App {
   constructor() {
     this.scroll = {
@@ -19,11 +21,11 @@ export default class App {
     this.createCamera();
     this.createScene();
 
-    this.createGeometry();
-
     this.onResize();
 
+    this.createGeometry();
     this.createMedias();
+    this.createBackground();
 
     this.update();
 
@@ -101,6 +103,14 @@ export default class App {
       });
 
       return media;
+    });
+  }
+
+  createBackground() {
+    this.background = new Background({
+      gl: this.gl,
+      scene: this.scene,
+      viewport: this.viewport,
     });
   }
 
@@ -190,6 +200,10 @@ export default class App {
 
     if (this.medias) {
       this.medias.forEach((media) => media.update(this.scroll, this.direction));
+    }
+
+    if (this.background) {
+      this.background.update(this.scroll, this.direction);
     }
 
     this.scroll.last = this.scroll.current;

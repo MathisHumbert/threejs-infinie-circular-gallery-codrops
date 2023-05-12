@@ -1,16 +1,12 @@
 import { Color, Geometry, Mesh, Program, Text, Texture } from 'ogl';
-import Autobind from 'auto-bind';
 
 import font from './fonts/freight.json';
 import src from './fonts/freight.png';
-
 import fragment from './shaders/title-fragment.glsl';
 import vertex from './shaders/title-vertex.glsl';
 
 export default class Title {
   constructor({ gl, plane, renderer, text }) {
-    Autobind(this);
-
     this.gl = gl;
     this.plane = plane;
     this.renderer = renderer;
