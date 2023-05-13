@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 
 import Media from './Media';
 import { lerp } from '../utils';
+import Background from './Background';
 
 export default class App {
   constructor() {
@@ -31,6 +32,7 @@ export default class App {
 
     this.createGeometry();
     this.createMedia();
+    this.createBackground();
 
     this.update();
 
@@ -105,6 +107,13 @@ export default class App {
     );
   }
 
+  createBackground() {
+    this.background = new Background({
+      scene: this.scene,
+      viewport: this.viewport,
+    });
+  }
+
   onResize() {
     this.screen = {
       width: window.innerWidth,
@@ -126,6 +135,10 @@ export default class App {
       this.medias.forEach((media) =>
         media.onResize({ screen: this.screen, viewport: this.viewport })
       );
+    }
+
+    if (this.background) {
+      this.background.onResize(this.viewport);
     }
   }
 
@@ -197,6 +210,10 @@ export default class App {
           this.scroll.speed
         )
       );
+    }
+
+    if (this.background) {
+      this.background.update(this.scroll.current, this.direction);
     }
 
     this.scroll.last = this.scroll.current;
