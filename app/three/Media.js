@@ -1,10 +1,22 @@
 import * as THREE from 'three';
+
 import vertex from './shaders/vertex.glsl';
 import fragment from './shaders/fragment.glsl';
+import Title from './Title';
+import Number from './Number';
 import { map } from '../utils';
 
 export default class Media {
-  constructor({ geometry, scene, image, screen, viewport, index, length }) {
+  constructor({
+    geometry,
+    scene,
+    image,
+    screen,
+    viewport,
+    index,
+    length,
+    text,
+  }) {
     this.geometry = geometry;
     this.scene = scene;
     this.image = image;
@@ -12,17 +24,20 @@ export default class Media {
     this.viewport = viewport;
     this.index = index;
     this.length = length;
+    this.text = text;
 
     this.xExtra = 0;
+    this.group = new THREE.Group();
 
     this.createShader();
     this.createMesh();
 
     this.onResize();
+
+    this.createTitle();
   }
 
   createShader() {
-    // const img = new Image()
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load(this.image, (texture) => {
       this.material.uniforms.uImageSizes.value = new THREE.Vector2(
@@ -33,7 +48,6 @@ export default class Media {
       return texture;
     });
 
-    // shader
     this.material = new THREE.RawShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
@@ -41,16 +55,33 @@ export default class Media {
         uTexture: { value: texture },
         uPlaneSizes: { value: new THREE.Vector2(0, 0) },
         uImageSizes: { value: new THREE.Vector2(0, 0) },
+        uTime: { value: 0 },
+        uSpeed: { value: 0 },
       },
       transparent: true,
-      // wireframe: true,
     });
   }
 
   createMesh() {
     this.plane = new THREE.Mesh(this.geometry, this.material);
 
-    this.scene.add(this.plane);
+    this.group.add(this.plane);
+
+    this.scene.add(this.group);
+  }
+
+  createTitle() {
+    new Title({
+      text: this.text,
+      group: this.group,
+      planeHeight: this.plane.scale.y,
+    });
+
+    new Number({
+      text: this.index % (this.length / 2),
+      group: this.group,
+      planeHeight: this.plane.scale.y,
+    });
   }
 
   onResize({ screen, viewport } = {}) {
@@ -81,23 +112,28 @@ export default class Media {
     this.x = this.width * this.index;
   }
 
-  update(scroll, direction) {
-    this.plane.position.x = this.x - scroll.current - this.xExtra;
-    this.plane.rotation.z = map(
-      this.plane.position.x,
+  update(scroll, direction, time, speed) {
+    this.group.position.x = this.x - scroll * 0.5 - this.xExtra;
+
+    this.group.rotation.z = map(
+      this.group.position.x,
       -this.widthTotal,
       this.widthTotal,
       Math.PI,
       -Math.PI
     );
 
-    this.plane.position.y =
-      Math.cos((this.plane.position.x / this.widthTotal) * Math.PI) * 75 - 75;
-    const planeOffset = this.plane.scale.x * 0.5;
+    this.group.position.y =
+      Math.cos((this.group.position.x / this.widthTotal) * Math.PI) * 75 - 75;
+
+    this.material.uniforms.uTime.value = time;
+    this.material.uniforms.uSpeed.value = speed;
+
+    const planeOffset = this.plane.scale.x * 0.75;
     const viewportOffset = this.viewport.width * 0.5;
 
-    this.isBefore = this.plane.position.x + planeOffset < -viewportOffset;
-    this.isAfter = this.plane.position.x - planeOffset > viewportOffset;
+    this.isBefore = this.group.position.x + planeOffset < -viewportOffset;
+    this.isAfter = this.group.position.x - planeOffset > viewportOffset;
 
     if (direction === 'right' && this.isBefore) {
       this.xExtra -= this.widthTotal;

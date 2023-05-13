@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import normalizeWheel from 'normalize-wheel';
+import { debounce } from 'lodash';
 
 import Media from './Media';
 import { lerp } from '../utils';
@@ -17,6 +18,10 @@ export default class App {
       width: window.innerWidth,
       height: window.innerHeight,
     };
+
+    this.time = 0;
+
+    this.onCheckDebounce = debounce(this.onCheck, 200);
 
     this.createScene();
     this.createCamera();
@@ -127,6 +132,8 @@ export default class App {
   onWheel(event) {
     const normalized = normalizeWheel(event);
     this.scroll.target += normalized.pixelY * 0.01;
+
+    this.onCheckDebounce();
   }
 
   onTouchDown(event) {
@@ -146,6 +153,23 @@ export default class App {
 
   onTouchUp() {
     this.isDown = false;
+
+    this.onCheck();
+  }
+
+  onCheck() {
+    const mediaWidth = this.medias[0].width;
+    const mediaIndex = Math.round(
+      Math.abs(this.scroll.target / (mediaWidth * 2))
+    );
+
+    const item = mediaWidth * (mediaIndex * 2);
+
+    if (this.scroll.target < 0) {
+      this.scroll.target = -item;
+    } else {
+      this.scroll.target = item;
+    }
   }
 
   update() {
@@ -161,8 +185,18 @@ export default class App {
       this.direction = 'left';
     }
 
+    this.scroll.speed = this.scroll.current - this.scroll.last;
+    this.time += 0.04;
+
     if (this.medias) {
-      this.medias.forEach((media) => media.update(this.scroll, this.direction));
+      this.medias.forEach((media) =>
+        media.update(
+          this.scroll.current,
+          this.direction,
+          this.time,
+          this.scroll.speed
+        )
+      );
     }
 
     this.scroll.last = this.scroll.current;
