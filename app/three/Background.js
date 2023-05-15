@@ -42,14 +42,16 @@ export default class Background {
     if (viewport) {
       this.viewport = viewport;
 
-      mesh.x = mesh.position.x = random(
-        -viewport.width * 0.5,
-        viewport.width * 0.5
-      );
-      mesh.y = mesh.position.y = random(
-        -viewport.height * 0.5,
-        viewport.height * 0.5
-      );
+      this.meshes.forEach((mesh) => {
+        mesh.x = mesh.position.x = random(
+          -viewport.width * 0.5,
+          viewport.width * 0.5
+        );
+        mesh.y = mesh.position.y = random(
+          -viewport.height * 0.5,
+          viewport.height * 0.5
+        );
+      });
     }
   }
 

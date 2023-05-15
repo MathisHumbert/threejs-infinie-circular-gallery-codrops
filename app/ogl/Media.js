@@ -1,4 +1,4 @@
-import { Mesh, Program, Texture } from 'ogl';
+import { Mesh, Program } from 'ogl';
 import { map } from '../utils';
 
 import fragment from './shaders/image-fragment.glsl';
@@ -10,7 +10,8 @@ export default class Media {
   constructor({
     geometry,
     gl,
-    image,
+    texture,
+    sizes,
     index,
     length,
     scene,
@@ -21,7 +22,8 @@ export default class Media {
   }) {
     this.geometry = geometry;
     this.gl = gl;
-    this.image = image;
+    this.texture = texture;
+    this.sizes = sizes;
     this.index = index;
     this.length = length;
     this.scene = scene;
@@ -40,14 +42,12 @@ export default class Media {
   }
 
   createShader() {
-    const texture = new Texture(this.gl, { generateMipmaps: false });
-
     this.program = new Program(this.gl, {
       fragment,
       vertex,
       uniforms: {
-        tMap: { value: texture },
-        uImageSize: { value: [0, 0] },
+        tMap: { value: this.texture },
+        uImageSize: { value: this.sizes },
         uPlaneSize: { value: [0, 0] },
         uViewportSizes: { value: [this.viewport.width, this.viewport.height] },
         uSpeed: { value: 0 },
@@ -55,18 +55,6 @@ export default class Media {
       },
       transparent: true,
     });
-
-    const image = new Image();
-
-    image.src = this.image;
-    image.onload = () => {
-      texture.image = image;
-
-      this.program.uniforms.uImageSize.value = [
-        image.naturalWidth,
-        image.naturalHeight,
-      ];
-    };
   }
 
   createMesh() {

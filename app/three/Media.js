@@ -10,7 +10,8 @@ export default class Media {
   constructor({
     geometry,
     scene,
-    image,
+    texture,
+    sizes,
     screen,
     viewport,
     index,
@@ -19,7 +20,8 @@ export default class Media {
   }) {
     this.geometry = geometry;
     this.scene = scene;
-    this.image = image;
+    this.texture = texture;
+    this.sizes = sizes;
     this.screen = screen;
     this.viewport = viewport;
     this.index = index;
@@ -38,23 +40,13 @@ export default class Media {
   }
 
   createShader() {
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load(this.image, (texture) => {
-      this.material.uniforms.uImageSizes.value = new THREE.Vector2(
-        texture.image.naturalWidth,
-        texture.image.naturalHeight
-      );
-
-      return texture;
-    });
-
     this.material = new THREE.RawShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
       uniforms: {
-        uTexture: { value: texture },
+        uTexture: { value: this.texture },
         uPlaneSizes: { value: new THREE.Vector2(0, 0) },
-        uImageSizes: { value: new THREE.Vector2(0, 0) },
+        uImageSizes: { value: this.sizes },
         uTime: { value: 0 },
         uSpeed: { value: 0 },
       },

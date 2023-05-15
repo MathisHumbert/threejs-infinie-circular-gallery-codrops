@@ -1,4 +1,4 @@
-import { Renderer, Camera, Transform, Plane } from 'ogl';
+import { Renderer, Camera, Transform, Plane, TextureLoader } from 'ogl';
 import normalizeWheel from 'normalize-wheel';
 import { debounce } from 'lodash';
 
@@ -23,6 +23,64 @@ export default class App {
 
     this.onResize();
 
+    this.load();
+  }
+
+  load() {
+    this.mediasImages = [
+      { image: '/img/1.jpg', text: 'New Synagogue' },
+      { image: '/img/2.jpg', text: 'Paro Taktsang' },
+      { image: '/img/3.jpg', text: 'Petra' },
+      { image: '/img/4.jpg', text: 'Gooderham Building' },
+      { image: '/img/5.jpg', text: 'Catherine Palace' },
+      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
+      { image: '/img/7.jpg', text: 'Madonna Corona' },
+      { image: '/img/8.jpg', text: 'Plaza de Espana' },
+      { image: '/img/9.jpg', text: 'Saint Martin' },
+      { image: '/img/10.jpg', text: 'Tugela Falls' },
+      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
+      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
+      { image: '/img/1.jpg', text: 'New Synagogue' },
+      { image: '/img/2.jpg', text: 'Paro Taktsang' },
+      { image: '/img/3.jpg', text: 'Petra' },
+      { image: '/img/4.jpg', text: 'Gooderham Building' },
+      { image: '/img/5.jpg', text: 'Catherine Palace' },
+      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
+      { image: '/img/7.jpg', text: 'Madonna Corona' },
+      { image: '/img/8.jpg', text: 'Plaza de Espana' },
+      { image: '/img/9.jpg', text: 'Saint Martin' },
+      { image: '/img/10.jpg', text: 'Tugela Falls' },
+      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
+      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
+    ];
+
+    console.log('passed');
+
+    Promise.all(
+      this.mediasImages.map(({ image, text }) => {
+        return new Promise((res) => {
+          const img = new Image();
+
+          img.src = image;
+          const texture = TextureLoader.load(this.gl, { src: image });
+
+          img.onload = () => {
+            res({
+              text,
+              texture,
+              sizes: [img.naturalWidth, img.naturalHeight],
+            });
+          };
+        });
+      })
+    ).then((data) => {
+      this.mediasTextures = data;
+      document.body.classList.add('loaded');
+      this.init();
+    });
+  }
+
+  init() {
     this.createGeometry();
     this.createMedias();
     this.createBackground();
@@ -61,40 +119,14 @@ export default class App {
   }
 
   createMedias() {
-    this.mediasImages = [
-      { image: '/img/1.jpg', text: 'New Synagogue' },
-      { image: '/img/2.jpg', text: 'Paro Taktsang' },
-      { image: '/img/3.jpg', text: 'Petra' },
-      { image: '/img/4.jpg', text: 'Gooderham Building' },
-      { image: '/img/5.jpg', text: 'Catherine Palace' },
-      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
-      { image: '/img/7.jpg', text: 'Madonna Corona' },
-      { image: '/img/8.jpg', text: 'Plaza de Espana' },
-      { image: '/img/9.jpg', text: 'Saint Martin' },
-      { image: '/img/10.jpg', text: 'Tugela Falls' },
-      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
-      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
-      { image: '/img/1.jpg', text: 'New Synagogue' },
-      { image: '/img/2.jpg', text: 'Paro Taktsang' },
-      { image: '/img/3.jpg', text: 'Petra' },
-      { image: '/img/4.jpg', text: 'Gooderham Building' },
-      { image: '/img/5.jpg', text: 'Catherine Palace' },
-      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
-      { image: '/img/7.jpg', text: 'Madonna Corona' },
-      { image: '/img/8.jpg', text: 'Plaza de Espana' },
-      { image: '/img/9.jpg', text: 'Saint Martin' },
-      { image: '/img/10.jpg', text: 'Tugela Falls' },
-      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
-      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
-    ];
-
-    this.medias = this.mediasImages.map(({ image, text }, index) => {
+    this.medias = this.mediasTextures.map(({ texture, sizes, text }, index) => {
       const media = new Media({
         geometry: this.planeGeometry,
         gl: this.gl,
-        image,
+        texture,
+        sizes,
         index,
-        length: this.mediasImages.length,
+        length: this.mediasTextures.length,
         scene: this.scene,
         screen: this.screen,
         text,

@@ -1,4 +1,14 @@
-// import OGL from './ogl/App';
-import THREE from './three/App';
+import imagesLoaded from 'imagesloaded';
 
-new THREE();
+import THREE from './three/App';
+import OGL from './ogl/App';
+
+const preloadImages = () => {
+  return new Promise((resolve) => {
+    imagesLoaded(document.querySelectorAll('img'), resolve);
+  });
+};
+
+preloadImages().then(() => {
+  new THREE();
+});

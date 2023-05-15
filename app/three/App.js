@@ -30,6 +30,61 @@ export default class App {
 
     this.onResize();
 
+    this.load();
+  }
+
+  load() {
+    this.mediasImages = [
+      { image: '/img/1.jpg', text: 'New Synagogue' },
+      { image: '/img/2.jpg', text: 'Paro Taktsang' },
+      { image: '/img/3.jpg', text: 'Petra' },
+      { image: '/img/4.jpg', text: 'Gooderham Building' },
+      { image: '/img/5.jpg', text: 'Catherine Palace' },
+      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
+      { image: '/img/7.jpg', text: 'Madonna Corona' },
+      { image: '/img/8.jpg', text: 'Plaza de Espana' },
+      { image: '/img/9.jpg', text: 'Saint Martin' },
+      { image: '/img/10.jpg', text: 'Tugela Falls' },
+      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
+      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
+      { image: '/img/1.jpg', text: 'New Synagogue' },
+      { image: '/img/2.jpg', text: 'Paro Taktsang' },
+      { image: '/img/3.jpg', text: 'Petra' },
+      { image: '/img/4.jpg', text: 'Gooderham Building' },
+      { image: '/img/5.jpg', text: 'Catherine Palace' },
+      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
+      { image: '/img/7.jpg', text: 'Madonna Corona' },
+      { image: '/img/8.jpg', text: 'Plaza de Espana' },
+      { image: '/img/9.jpg', text: 'Saint Martin' },
+      { image: '/img/10.jpg', text: 'Tugela Falls' },
+      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
+      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
+    ];
+
+    const textureLoader = new THREE.TextureLoader();
+    Promise.all(
+      this.mediasImages.map((media) => {
+        return new Promise((res) => {
+          textureLoader.load(media.image, (texture) => {
+            res({
+              text: media.text,
+              texture: texture,
+              sizes: new THREE.Vector2(
+                texture.image.naturalWidth,
+                texture.image.naturalHeight
+              ),
+            });
+          });
+        });
+      })
+    ).then((data) => {
+      this.mediasTextures = data;
+      document.body.classList.add('loaded');
+      this.init();
+    });
+  }
+
+  init() {
     this.createGeometry();
     this.createMedia();
     this.createBackground();
@@ -65,40 +120,14 @@ export default class App {
   }
 
   createMedia() {
-    this.mediasImages = [
-      { image: '/img/1.jpg', text: 'New Synagogue' },
-      { image: '/img/2.jpg', text: 'Paro Taktsang' },
-      { image: '/img/3.jpg', text: 'Petra' },
-      { image: '/img/4.jpg', text: 'Gooderham Building' },
-      { image: '/img/5.jpg', text: 'Catherine Palace' },
-      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
-      { image: '/img/7.jpg', text: 'Madonna Corona' },
-      { image: '/img/8.jpg', text: 'Plaza de Espana' },
-      { image: '/img/9.jpg', text: 'Saint Martin' },
-      { image: '/img/10.jpg', text: 'Tugela Falls' },
-      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
-      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
-      { image: '/img/1.jpg', text: 'New Synagogue' },
-      { image: '/img/2.jpg', text: 'Paro Taktsang' },
-      { image: '/img/3.jpg', text: 'Petra' },
-      { image: '/img/4.jpg', text: 'Gooderham Building' },
-      { image: '/img/5.jpg', text: 'Catherine Palace' },
-      { image: '/img/6.jpg', text: 'Sheikh Zayed Mosque' },
-      { image: '/img/7.jpg', text: 'Madonna Corona' },
-      { image: '/img/8.jpg', text: 'Plaza de Espana' },
-      { image: '/img/9.jpg', text: 'Saint Martin' },
-      { image: '/img/10.jpg', text: 'Tugela Falls' },
-      { image: '/img/11.jpg', text: 'Sintra-Cascais' },
-      { image: '/img/12.jpg', text: "The Prophet's Mosque" },
-    ];
-
-    this.medias = this.mediasImages.map(
-      ({ image, text }, index) =>
+    this.medias = this.mediasTextures.map(
+      ({ text, texture, sizes }, index) =>
         new Media({
-          image,
           text,
+          texture,
+          sizes,
           index,
-          length: this.mediasImages.length,
+          length: this.mediasTextures.length,
           screen: this.screen,
           viewport: this.viewport,
           geometry: this.planeGeometry,
