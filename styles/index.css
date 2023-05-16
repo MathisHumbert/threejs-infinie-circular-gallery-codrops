@@ -5,8 +5,6 @@
 }
 
 html {
-  background: #cbcabd;
-  color: #545050;
   font-size: calc(100vw / 1920 * 10);
   height: 100%;
   left: 0;
@@ -17,6 +15,8 @@ html {
 }
 
 body {
+  background: #cbcabd;
+  color: #545050;
   font-family: 'halyard-display', sans-serif;
   font-size: 15px;
   margin: 0;
@@ -153,7 +153,7 @@ body::after {
 
 body.loaded::after {
   animation-play-state: paused;
-  opacity: 0 !important;
+  opacity: 0;
 }
 
 @keyframes loaderAnim {
