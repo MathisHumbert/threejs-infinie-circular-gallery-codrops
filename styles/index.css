@@ -154,6 +154,7 @@ body::after {
 body.loaded::after {
   animation-play-state: paused;
   opacity: 0 !important;
+  z-index: -1;
 }
 
 @keyframes loaderAnim {
