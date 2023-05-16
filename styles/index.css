@@ -148,13 +148,13 @@ body::after {
   opacity: 0.4;
   background: #545050;
   animation: loaderAnim 0.7s linear infinite alternate forwards;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.4s ease, background 1s ease;
 }
 
 body.loaded::after {
   animation-play-state: paused;
   opacity: 0 !important;
-  z-index: -1;
+  background: #cbcabd;
 }
 
 @keyframes loaderAnim {
